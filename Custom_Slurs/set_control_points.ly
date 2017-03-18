@@ -275,8 +275,8 @@ Y:
         ;; It would be possible to shorten the following lines.
         ;; For a better overview and for to be able to work
         ;; on special cases, I've left them as they are.
-        
-         ;; left control-point
+
+        ;; left control-point
          (if left-target
              (begin
               (set! diff-x (get-x-value grob cps rank-interval ctx left-target (car neighbours) 2 -1))
@@ -322,24 +322,27 @@ Y:
 
 #(define (set-control-points grob cps rank-interval neighbours slur-type)
      
-    ;;;;;;;;;;;;;;;;;;;;;;;; DEBUGGING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    
-    ;; Get some infos by uncommenting following lines
-    ;; see methods in debugging.ly
-    
-    ;(show-info grob rank-interval neighbours slur-type)
-    
-    ;(debug-cases) ;; do something on special cases. see there
-    
-    ;(do-once (display-member-names-VAGroups grob) 0)
-    
-    ;; debugging method to write numbers to slur grobs in the engraved notes
-    ; (draw-annotationB grob)  
-    
-    ;;;;;;;;;;;;;;;;;;;;;;;; DEBUGGING END ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    
-    (calculate-control-points grob rank-interval 
-        neighbours cps slur-type)
+    (if (member (get-ctx grob) (list "unten" "oben"))
+        (begin
+        ;;;;;;;;;;;;;;;;;;;;;;;; DEBUGGING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        
+        ;; Get some infos by uncommenting following lines
+        ;; see methods in debugging.ly
+        
+        ;; debugging method to write numbers to slur grobs in the engraved notes
+         
+        ;(draw-annotationB grob) 
+        
+        ;(show-info grob rank-interval neighbours slur-type)
+        
+        ;(debug-cases) ;; do something on special cases. see there
+        
+        ;(do-once (display-member-names-VAGroups grob) 5)
+        
+        ;;;;;;;;;;;;;;;;;;;;;;;; DEBUGGING END ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        (calculate-control-points grob rank-interval 
+              neighbours cps slur-type)))
 )
 
 

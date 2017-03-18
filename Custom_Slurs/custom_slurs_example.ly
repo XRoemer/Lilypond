@@ -1,42 +1,15 @@
 \version "2.19.52"
 
 
-
 \include "layouts.ly"
 \include "music.ly"
 
 \include "shape_slurs.ly"
 
 \header {
-  title = "Custom Phrasing Slur Example"
+  title = "Custom Phrasing-Slurs Example"
 }
 
-
-layout-slurs = 
-\layout  {
-    \context {
-      \Score
-      \consists \collect_cols_slurs_and_lyrics      
-      % for debugging: draw ranks of paper-columns
-      % \override NonMusicalPaperColumn #'stencil = #ly:paper-column::print
-%       \override PaperColumn #'stencil = #ly:paper-column::print
-    }
-    \context {
-        \Staff
-        % for debugging: draw refpoints of grobs
-        % needs to include of definitions.ily
-        % \printAnchors #'all-grobs 
-    }
-    \context {
-        \Voice
-        \consists \collect_cols_slurs_and_lyrics
-        }   
-    \context {
-      \Lyrics
-      % hier werden die Lyrics im engraver listener eingetragen
-      \consists \collect_cols_slurs_and_lyrics 
-    }
-  }
   
 my-score =
 \score  {
@@ -46,7 +19,6 @@ my-score =
         
         \new Voice = "oben" 
         \music-top
-        \custom-slurs
         
     \new Staff = "staff_mitte"
         \with {\layout-middle}
@@ -66,21 +38,21 @@ my-score =
         >>
     
     \new Staff  = "staff_unten"
-        \with {\layout-bottom \custom-slurs}
+        \with {\layout-bottom}
         
         \new Voice = "unten" 
-        \music-bottom         
+        \music-bottom   
+        
   >>
 
   \layout  {
-    
-    \layout-slurs 
-    
+        
     \context {
       \Score
       \remove "Bar_number_engraver"
       \remove "Bar_engraver"
     }
+
     \context {
         \Staff
         \remove "Time_signature_engraver"
@@ -129,25 +101,8 @@ my-score =
 
 
 
+#(calculate-custom-phrasingslurs my-score)
 
-\paper {    
-    #(define (page-post-process layout pages)
-        (get-slur-extents layout pages))
-}
+\my-score
 
-#(define start-second-pass #f)
-
-\book {
-  \my-score
-}
-
-#(set! start-second-pass #t)
-#(set! annot-zaehler 0)
-
-% Second compilation uses values
-% calculated in first pass
-#(define output-suffix "second")
-\book {
-  \my-score
-}
 

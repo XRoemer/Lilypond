@@ -10,6 +10,11 @@
 \include "debugging.ly"
 \include "definitions.ily"
 
+%% Settable Properties, might be overwritten
+#(define SLUR-Y-INDENT 1.0)		% slur indent from word baseline towards middleline
+#(define MAX-X-EXTENT 2.1)		% maximum of how much a slur is shifted toward the next word
+#(define FIX-X-EXTENT 1.5)		% fixed distance in x direction, used at system-line's start and end
+
 
 #(define (get-ht-value keyA keyB)
     (hash-ref (hash-ref ht-columns keyB) keyA))
@@ -48,7 +53,7 @@
                         'extra)))
                         
         )
-        
+         
         ;; get and extract informations about positions
         ;; and neighbours
         (if
@@ -153,7 +158,7 @@ collect_cols_slurs_and_lyrics =
     )
 )
 
-#(define counter-va-lines 1)
+#(define counter-va-lines 0)
 #(define ht-va-distances (make-hash-table))
 
 #(define (get-slur-extentsB layout pages)
@@ -233,17 +238,80 @@ collect_cols_slurs_and_lyrics =
 %% in set_control_points.ly
 #(define display-system-line-counter #f)
 
-custom-slurs =
-#(define-music-function (parser location)
-     ()
-    #{
-      \override Staff.PhrasingSlur.cross-staff = ##t
-      \override Staff.PhrasingSlur.color = #red
-      \override Staff.PhrasingSlur.after-line-breaking = #start-shaping 
-      \override Score.SystemStartBar.after-line-breaking = #count-system-lines
-    #})
+
+cust-slur = {
+    \override Staff.PhrasingSlur.cross-staff = ##t
+    \override Staff.PhrasingSlur.color = #red
+    \override Staff.PhrasingSlur.after-line-breaking = #start-shaping 
+    \override Score.SystemStartBar.after-line-breaking = #count-system-lines
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%% TO-DO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% as long as \layout and \paper are not inside calculate-custom-phrasingslurs
+%% they will be calculated for any other score as well.
 
 
+%layout-slurs = 
+\layout  {
+    \context {
+      \Score
+      \consists \collect_cols_slurs_and_lyrics      
+      % for debugging: draw ranks of paper-columns
+      % \override NonMusicalPaperColumn #'stencil = #ly:paper-column::print
+%       \override PaperColumn #'stencil = #ly:paper-column::print
+    }
+    \context {
+        \Staff
+        \cust-slur
+        % for debugging: draw refpoints of grobs
+        % needs to include of definitions.ily
+        % \printAnchors #'all-grobs 
+    }
+    \context {
+        \Voice
+        \cust-slur
+        \consists \collect_cols_slurs_and_lyrics
+        }   
+    \context {
+      \Lyrics
+      % hier werden die Lyrics im engraver listener eingetragen
+      \consists \collect_cols_slurs_and_lyrics 
+    }
+  }
+
+
+\paper {    
+    #(define (page-post-process layout pages)
+        (get-slur-extents layout pages))
+}
+
+#(define start-second-pass #f)
+
+calculate-custom-phrasingslurs =
+#(define-void-function (parser location score)
+    (scheme?)
+    (let* (
+        (book-process (lambda (sc)
+            (let*(  
+                (book #{\book {} #})
+                )
+                (ly:book-add-score! book sc)
+                (ly:book-process
+                    book #{ \paper {} #}
+                    #{ \layout {} #}
+                    (ly:parser-output-name (*parser*))
+                )
+            ))
+        )
+    )
+    (set! start-second-pass #f)
+    (book-process score)
+    (set! start-second-pass #t)
+    (set! annot-zaehler 0)
+    
+    )
+)
 
 
 
